@@ -50,36 +50,34 @@ static NSString * const JGShopId = @"shop";
     self.collectionView.mj_footer.hidden = YES;
 }
 
-- (void)loadNewShops {
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        //        NSArray *shops = [JGShop mj_objectArrayWithFile:@"1.plist"];
+#pragma mark - 加载下拉数据
+- (void)loadNewShops
+{
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
         NSArray *shops = [JGShop mj_objectArrayWithFilename:@"2.plist"];
-        [self.shops removeAllObjects];
-        [self.shops addObjectsFromArray:shops];
-        
-        //刷新数据
-        [self.collectionView reloadData];
-        [self.collectionView.mj_header endRefreshing];
+        [weakSelf.shops removeAllObjects];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf.collectionView reloadData];
+            [weakSelf.shops addObjectsFromArray:shops];
+            [weakSelf.collectionView.mj_header endRefreshing];
+            [weakSelf.collectionView reloadData];
+        });
     });
 }
 
-- (void)loadMoreShops {
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        
+#pragma mark - 加载上拉数据
+- (void)loadMoreShops
+{
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
         NSArray *shops = [JGShop mj_objectArrayWithFilename:@"2.plist"];
-        [self.shops addObjectsFromArray:shops];
-        
-        //刷新数据
-        [self.collectionView reloadData];
-        [self.collectionView.mj_footer endRefreshing];
-        
-        
+        [weakSelf.shops addObjectsFromArray:shops];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf.collectionView.mj_footer endRefreshing];
+            [weakSelf.collectionView reloadData];
+        });
     });
-    
-    
-    
 }
 
 - (void)setupLayout {
